@@ -17,9 +17,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -63,7 +61,7 @@ public class MastodonDataFetcher {
     }
 
 
-    public synchronized List<Status> getStatuses() throws ConnectException {
+    public List<Status> getStatuses() throws ConnectException {
         if (connectionError != null) {
             throw connectionError;
         }

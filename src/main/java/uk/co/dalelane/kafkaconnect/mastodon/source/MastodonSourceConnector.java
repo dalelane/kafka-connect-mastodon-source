@@ -28,7 +28,7 @@ public class MastodonSourceConnector extends SourceConnector {
 
     private final Logger log = LoggerFactory.getLogger(MastodonSourceConnector.class);
 
-    protected static final String VERSION = "0.0.2";
+    protected static final String VERSION = "0.0.3";
 
     private Map<String, String> configProps = null;
 
