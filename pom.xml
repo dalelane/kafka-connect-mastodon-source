@@ -8,7 +8,7 @@
     <groupId>uk.co.dalelane.kafkaconnect.mastodon</groupId>
     <artifactId>kafka-connect-mastodon-source</artifactId>
     <description>Kafka Connect Source Connector for Mastodon</description>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <dependencies>
         <dependency>

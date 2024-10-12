@@ -17,15 +17,19 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.kafka.common.config.AbstractConfig;
+import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import social.bigbone.MastodonClient;
 import social.bigbone.api.entity.Status;
 import social.bigbone.api.entity.streaming.MastodonApiEvent.GenericMessage;
+import social.bigbone.api.entity.streaming.TechnicalEvent.Failure;
 import social.bigbone.api.entity.streaming.WebSocketCallback;
 import social.bigbone.api.entity.streaming.WebSocketEvent;
 
@@ -42,6 +46,7 @@ public class MastodonDataFetcher {
     private final List<Status> fetchedRecords = Collections.synchronizedList(new ArrayList<Status>());
 
     private Closeable mastodonStream = null;
+    private ConnectException connectionError = null;
 
     private final String accesstoken;
     private final String instancehostname;
@@ -58,7 +63,11 @@ public class MastodonDataFetcher {
     }
 
 
-    public synchronized List<Status> getStatuses() {
+    public synchronized List<Status> getStatuses() throws ConnectException {
+        if (connectionError != null) {
+            throw connectionError;
+        }
+
         synchronized (fetchedRecords) {
             List<Status> copy = new ArrayList<>(fetchedRecords);
             fetchedRecords.clear();
@@ -77,11 +86,14 @@ public class MastodonDataFetcher {
                 log.error("Error stopping mastodon stream", e);
             }
             mastodonStream = null;
+            connectionError = null;
         }
     }
 
     public void start() {
         try {
+            connectionError = null;
+
             MastodonClient mastodonClient = new MastodonClient
                 .Builder(instancehostname)
                 .accessToken(accesstoken)
@@ -101,6 +113,10 @@ public class MastodonDataFetcher {
                                     fetchedRecords.add(status);
                                 }
                             }
+                        }
+                        else if (event instanceof Failure) {
+                            log.error("streaming connection error {}", event.toString());
+                            connectionError = new ConnectException("Streaming connection error " + event.toString());
                         }
                         else {
                             log.info("event type {}", event.getClass().getCanonicalName());

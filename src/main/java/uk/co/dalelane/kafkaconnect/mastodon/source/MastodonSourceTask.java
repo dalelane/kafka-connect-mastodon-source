@@ -23,6 +23,8 @@ import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import social.bigbone.api.entity.Status;
+
 public class MastodonSourceTask extends SourceTask {
 
     private static Logger log = LoggerFactory.getLogger(MastodonSourceTask.class);
@@ -60,8 +62,8 @@ public class MastodonSourceTask extends SourceTask {
 
     @Override
     public List<SourceRecord> poll() throws InterruptedException {
-        return dataFetcher.getStatuses()
-            .stream()
+        List<Status> statuses = dataFetcher.getStatuses();
+        return statuses.stream()
             .map(r -> recordFactory.createSourceRecord(r))
             .collect(Collectors.toList());
     }
